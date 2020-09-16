@@ -12,7 +12,9 @@ const callback = async function() {
 let minimizer = new hdjs.Minimizer({
   primeLimits: [19, 12, 2, 2, 1, 1],
   dimensions: 3,
-  bounds: [-4.0, 4.0],
+  bounds: [-3.0, 3.0],
+  hdLimit: 7.0,
+  learningRate: 1e-2,
   callback: callback,
 })
 
@@ -35,8 +37,16 @@ const handlers = {
 
   setLogPitch: async (idx, pitch) => {
     let currentPitches = await minimizer.logPitches.array()
-    currentPitches[0][idx] = pitch
-    minimizer.logPitches.assign(tf.tensor(currentPitches))
+    if (idx < currentPitches[0].length) {
+      currentPitches[0][idx] = pitch
+      minimizer.logPitches.assign(tf.tensor(currentPitches))
+    } else {
+      Max.post("Not enough voices to handle your request")
+    }
+  },
+
+  setC: (c) => {
+    minimizer.setC(c)
   },
 
   getWeights: async () => {
